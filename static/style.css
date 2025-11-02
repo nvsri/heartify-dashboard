@@ -1,0 +1,221 @@
+/* ---------- Global ---------- */
+:root{
+  --pink-strong: #ff4d6d;   /* header pink */
+  --pink-soft: #ffe9ec;     /* card soft */
+  --bg: #fff5f5;
+  --card-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  --muted: #666;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Poppins", Arial, sans-serif;
+  background: var(--bg);
+  color:#222;
+}
+
+/* ---------- Header ---------- */
+.dashboard-header{
+  background: var(--pink-strong);
+  padding:26px 36px;
+  color:white;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.dashboard-header h1{
+  margin:0;
+  font-size:28px;
+  font-weight:700;
+}
+.logout-btn{
+  background:white;
+  color:var(--pink-strong);
+  padding:8px 14px;
+  border-radius:12px;
+  font-weight:600;
+  text-decoration:none;
+}
+
+/* ---------- Layout wrapper ---------- */
+.dashboard-wrapper{
+  display:flex;
+  gap:30px;
+  padding:28px 36px;
+  align-items:flex-start;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:250px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.card{
+  background:white;
+  border-radius:12px;
+  padding:18px;
+  box-shadow: var(--card-shadow);
+}
+.profile-card{
+  text-align:center;
+  padding-top:24px;
+  padding-bottom:24px;
+}
+.avatar{ width:72px; border-radius:50%; display:block; margin:0 auto 10px;}
+.username{ font-weight:700; margin:6px 0;}
+
+/* health score text */
+.health-score{ color:var(--pink-strong); font-weight:700; margin-top:8px; }
+
+/* tips */
+.tips-card h4{ margin:0 0 8px 0; }
+.tips-card p{ margin:0; color:var(--muted); }
+
+/* report card */
+.report-card h4{ margin:0 0 8px 0; }
+.download-pdf-btn{
+  background:var(--pink-strong);
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  width:100%;
+  font-weight:700;
+}
+
+/* ---------- Main content ---------- */
+.main-content{
+  flex:1;
+  background:white;
+  border-radius:12px;
+  padding:28px;
+  box-shadow: var(--card-shadow);
+}
+
+/* welcome */
+.welcome h2{ margin:0 0 6px 0; color:var(--pink-strong); }
+.welcome p{ margin:0 0 18px 0; color:#333 }
+
+/* summary cards row */
+.summary-cards{
+  display:flex;
+  gap:18px;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+.stat-card{
+  background:var(--pink-soft);
+  border-radius:12px;
+  padding:22px;
+  width:220px;
+  box-shadow: 0 8px 18px rgba(255,77,109,0.06);
+  text-align:center;
+}
+.stat-icon{ color:var(--pink-strong); font-size:22px; margin-bottom:8px; }
+.stat-card h4{ margin:6px 0; color:var(--pink-strong); }
+.stat-value{ margin:6px 0; font-weight:600; }
+
+/* form section */
+.form-section{ margin-top:28px; text-align:center; }
+.form-title{ margin-bottom:10px; color:#333; font-weight:700 }
+.health-form{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.health-form input, .health-form select{
+  padding:12px 14px;
+  border-radius:8px;
+  border:1px solid #eee;
+  width:240px;
+  background:white;
+}
+.save-btn{
+  display:block;
+  width:80%;
+  max-width:720px;
+  margin:18px auto 0 auto;
+  background:var(--pink-strong);
+  color:white;
+  border:none;
+  padding:16px;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow: 0 8px 20px rgba(255,77,109,0.12);
+}
+
+/* records section */
+.records-section{ margin-top:28px; }
+.records-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+.records-table th{
+  text-align:left;
+  padding:12px;
+  background:transparent;
+  color:#333;
+}
+.records-table td{
+  padding:12px;
+  border-bottom:1px solid #f0e9e9;
+  color:#555;
+}
+.no-records{ color:var(--muted); margin-top:8px; }
+
+/* ---------- Login specific styles (unchanged gradient look) ---------- */
+.login-body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background: linear-gradient(135deg, #ff6b6b, #f94d6a);
+}
+.login-container{
+  background:white;
+  padding:36px;
+  border-radius:12px;
+  width:360px;
+  text-align:center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+.app-title{ color:var(--pink-strong); font-size:28px; margin-bottom:6px; font-weight:800; }
+.login-container h2{ margin-top:0; margin-bottom:14px; color:#333; }
+.login-container input{
+  width:80%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #eee;
+}
+.login-container button{
+  width:84%;
+  padding:12px;
+  margin-top:8px;
+  border-radius:10px;
+  border:none;
+  background:var(--pink-strong);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+.login-quote{ margin-top:12px; font-size:13px; color:#777; }
+.hint{ margin-top:8px; font-size:12px; color:#aaa }
+
+/* Responsive */
+@media(max-width: 920px){
+  .dashboard-wrapper{ flex-direction:column; padding:20px; }
+  .sidebar{ width:100%; flex-direction:row; justify-content:space-between; flex-wrap:wrap; }
+  .main-content{ width:100%; margin-top:12px; }
+  .summary-cards{ justify-content:center; }
+  .health-form input, .health-form select{ width:200px; }
+}

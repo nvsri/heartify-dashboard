@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Heartify Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+  <!-- header -->
+  <header class="dashboard-header">
+    <h1>❤️ Heartify Dashboard</h1>
+    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+  </header>
+
+  <div class="dashboard-wrapper">
+    <!-- left sidebar -->
+    <aside class="sidebar">
+      <div class="card profile-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="avatar" class="avatar">
+        <div class="profile-info">
+          <h3 class="username">{{ user }}</h3>
+          <p>Age: 24</p>
+          <p>Gender: Male</p>
+          <p class="health-score">Health Score: <strong>86 / 100</strong></p>
+        </div>
+      </div>
+
+      <div class="card tips-card">
+        <h4>💡 Health Tip</h4>
+        <p id="health-tip">Get 7-8 hours of sleep 😴</p>
+      </div>
+
+      <div class="card report-card">
+        <h4>📄 Generate Report</h4>
+        <form action="{{ url_for('download_pdf') }}" method="GET">
+          <button type="submit" class="download-pdf-btn">Download PDF</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- main content -->
+    <main class="main-content">
+      <section class="welcome">
+        <h2>Welcome, {{ user }}!</h2>
+        <p>Track your health and predict your heart disease risk with <strong>Heartify</strong>.</p>
+      </section>
+
+      <!-- summary cards -->
+      <section class="summary-cards">
+        <div class="stat-card">
+          <i class="fa-solid fa-heart-pulse stat-icon"></i>
+          <h4>Heart Rate</h4>
+          <p class="stat-value">72 bpm</p>
+        </div>
+
+        <div class="stat-card">
+          <i class="fa-solid fa-stethoscope stat-icon"></i>
+          <h4>Blood Pressure</h4>
+          <p class="stat-value">120 / 80 mmHg</p>
+        </div>
+
+        <div class="stat-card">
+          <i class="fa-solid fa-syringe stat-icon"></i>
+          <h4>Sugar Level</h4>
+          <p class="stat-value">95 mg/dL</p>
+        </div>
+
+        <div class="stat-card">
+          <i class="fa-solid fa-smoking stat-icon"></i>
+          <h4>Smoking Status</h4>
+          <p class="stat-value">Non-Smoker 🚭</p>
+        </div>
+      </section>
+
+      <!-- heart prediction form -->
+      <section class="form-section">
+        <h3 class="form-title">🩺 Enter Health Data</h3>
+
+        <form method="POST" action="{{ url_for('dashboard') }}" class="health-form">
+          <input type="number" name="heart_rate" placeholder="Age / Heart Rate (bpm)" required>
+          <input type="text" name="bp" placeholder="Blood Pressure (e.g., 120/80)" required>
+          <input type="number" name="sugar" placeholder="Sugar Level (mg/dL)" required>
+          <select name="smoker" required>
+            <option value="">Smoker?</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+
+          <!-- big pink Save Data button like screenshot -->
+          <button type="submit" class="save-btn">Save Data</button>
+        </form>
+      </section>
+
+      <!-- saved records -->
+      <section class="records-section">
+        <h3>Your Saved Records</h3>
+        {% if records and records|length > 0 %}
+        <table class="records-table">
+          <thead>
+            <tr><th>Heart Rate</th><th>BP</th><th>Sugar</th><th>Smoker</th></tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+            <tr>
+              <td>{{ r.heart_rate }}</td>
+              <td>{{ r.bp }}</td>
+              <td>{{ r.sugar }}</td>
+              <td>{{ r.smoker }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="no-records">No saved records yet.</p>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // random tip (keeps the health-tip visible like the screenshot)
+    const tips = [
+      "Get 7-8 hours of sleep 😴",
+      "Walk 30 minutes daily 🚶‍♂️",
+      "Avoid smoking and excessive sugar 🚭",
+      "Eat more fruits and vegetables 🍎",
+      "Drink enough water 💧",
+    ];
+    document.getElementById('health-tip').innerText = tips[Math.floor(Math.random()*tips.length)];
+  </script>
+</body>
+</html>
