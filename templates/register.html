@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Heartify ❤️</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <h1 class="app-title">Heartify ❤️</h1>
+        <p class="tagline">Create your account to get started</p>
+
+        <form action="/register" method="POST" class="login-form">
+            <input type="text" name="username" placeholder="Enter Username" required><br>
+            <input type="password" name="password" placeholder="Enter Password" required><br>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
+            <button type="submit" class="register-btn">Register</button>
+        </form>
+
+        <p class="switch-page">
+            Already have an account? <a href="/">Login</a>
+        </p>
+    </div>
+</body>
+</html>
+
+
+

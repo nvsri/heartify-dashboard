@@ -9,21 +9,29 @@
 <body class="login-body">
   <div class="login-container">
     <h1 class="app-title">❤️ Heartify</h1>
-    <h2>Login</h2>
+    <h2 class="subtitle">Login</h2>
 
-    {% if error %}
-      <p class="error">{{ error }}</p>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <p class="flash {{ cat }}">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
     <form method="POST" action="{{ url_for('login') }}">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Login</button>
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit" class="login-button">Login</button>
     </form>
 
-    <!-- restored quote under login button exactly as you required -->
-    <p class="login-quote">“Your heart matters — track it before it cracks.” ❤️</p>
+    <p class="quote">“Your heart matters — track it before it cracks.” ❤️</p>
+    <p class="small">Don’t have an account? <a href="{{ url_for('register') }}">Create one</a></p>
     <p class="hint">Use <strong>admin</strong> / <strong>1234</strong></p>
   </div>
 </body>
 </html>
+
+
+
+

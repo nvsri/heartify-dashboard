@@ -1,112 +1,147 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_pymongo import PyMongo
-import io
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
-app.secret_key = "heartify_secret_key_2025"
+app.secret_key = "supersecretkey"
 
-# Use exact DB name with capital H as you requested
+# MongoDB connection
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Heartifyconnection"
 mongo = PyMongo(app)
+users = mongo.db.users
+health_data = mongo.db.health_data
 
-# Hardcoded credentials (kept exactly)
-USERNAME = "admin"
-PASSWORD = "1234"
-
-@app.route("/", methods=["GET"])
-def root():
+# Home route → login page
+@app.route("/")
+def home():
     return redirect(url_for("login"))
 
+# ---------------- Login ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Keep the login flow exactly as before
-    error = None
     if request.method == "POST":
-        uname = request.form.get("username", "").strip()
-        pwd = request.form.get("password", "").strip()
-        if uname == USERNAME and pwd == PASSWORD:
-            session["user"] = uname
+        username = request.form["username"]
+        password = request.form["password"]
+
+        user = users.find_one({"username": username, "password": password})
+        if user:
+            session["user"] = username
             return redirect(url_for("dashboard"))
         else:
-            error = "Invalid username or password"
-            return render_template("login.html", error=error)
-    return render_template("login.html", error=error)
+            return render_template("login.html", error="Invalid username or password")
+    return render_template("login.html")
 
-@app.route("/dashboard", methods=["GET", "POST"])
+# ---------------- Registration ----------------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+
+        if password != confirm_password:
+            return render_template("register.html", error="Passwords do not match")
+
+        if users.find_one({"username": username}):
+            return render_template("register.html", error="Username already exists")
+
+        users.insert_one({"username": username, "password": password})
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+# ---------------- Dashboard ----------------
+@app.route("/dashboard")
 def dashboard():
     if "user" not in session:
         return redirect(url_for("login"))
 
-    # Save submitted health data into MongoDB
-    if request.method == "POST":
-        heart_rate = request.form.get("heart_rate", "").strip()
-        bp = request.form.get("bp", "").strip()
-        sugar = request.form.get("sugar", "").strip()
-        smoker = request.form.get("smoker", "").strip()
+    username = session["user"]
+    records = list(health_data.find({"username": username}))
+    return render_template("dashboard.html", username=username, records=records)
 
-        # Insert only if at least one field provided (safe)
-        mongo.db.records.insert_one({
-            "username": session["user"],
-            "heart_rate": heart_rate,
-            "bp": bp,
-            "sugar": sugar,
-            "smoker": smoker
-        })
-
-    # fetch all records for display (descending latest first)
-    records_cursor = mongo.db.records.find({"username": session.get("user", None)})
-    records = list(records_cursor)
-    # convert _id to string if needed in templates (we won't show _id)
-    for r in records:
-        r.pop("_id", None)
-
-    return render_template("dashboard.html", user=session["user"], records=records)
-
-@app.route("/download_pdf", methods=["GET"])
-def download_pdf():
+# ---------------- Submit health data ----------------
+@app.route("/submit_health_data", methods=["POST"])
+def submit_health_data():
     if "user" not in session:
         return redirect(url_for("login"))
 
-    # produce PDF containing latest records for the logged-in user
-    records = list(mongo.db.records.find({"username": session["user"]}))
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-    p.setTitle("Heartify Report")
+    data = {
+        "username": session["user"],
+        "heart_rate": request.form["heart_rate"],
+        "bp_level": request.form["bp_level"],
+        "sugar_level": request.form["sugar_level"],
+        "pulse_rate": request.form["pulse_rate"],
+        "smoker_status": request.form["smoker_status"]
+    }
+    health_data.insert_one(data)
+    return redirect(url_for("dashboard"))
 
-    # Header
-    p.setFont("Helvetica-Bold", 18)
-    p.drawString(55, 750, "❤️ Heartify Health Report")
-    p.setFont("Helvetica", 11)
-    p.drawString(55, 734, f"User: {session['user']}")
+# ---------------- Generate Report ----------------
+@app.route("/generate_report", methods=["POST"])
+def generate_report():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    # (Placeholder) In future, you can add PDF generation logic here
+    return redirect(url_for("dashboard"))
 
-    y = 710
-    if not records:
-        p.drawString(55, y, "No records available.")
-    else:
-        p.drawString(55, y, "Recent records (latest first):")
-        y -= 24
-        # show latest 10 records or fewer
-        for rec in reversed(records[-10:]):
-            line = f"Heart Rate: {rec.get('heart_rate','-')} | BP: {rec.get('bp','-')} | Sugar: {rec.get('sugar','-')} | Smoker: {rec.get('smoker','-')}"
-            p.drawString(55, y, line)
-            y -= 18
-            if y < 60:
-                p.showPage()
-                y = 750
-
-    p.showPage()
-    p.save()
-    buffer.seek(0)
-
-    return send_file(buffer, as_attachment=True, download_name="heartify_report.pdf", mimetype="application/pdf")
-
+# ---------------- Logout ----------------
 @app.route("/logout")
 def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
 
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+    user_msg = (request.json or {}).get("message", "")
+    text = user_msg.lower().strip()
+
+    # Exact-match FAQ
+    faq = {
+        "what is heartify": "Heartify is your personal heart health tracker.",
+        "how to save data": "Fill the health form and click Save Data.",
+        "how to generate report": "Click the PDF button on the dashboard.",
+        "hello": "Hello! How can I help you?",
+        "hi": "Hi! What would you like to know?",
+        "thanks": "You're welcome! Happy to help.",
+        "thank you": "You're welcome!"
+    }
+
+    if text in faq:
+        reply = faq[text]
+    else:
+        # Fuzzy / keyword matching for more interactive responses
+        # Additional FAQ: heart care tips (check before generic 'heart' keyword)
+        if "heart care tips" in text or "heart care" in text or "care tips" in text or text == "tips":
+            reply = "No excessive sugar. Drink water. Proper sleep. Do exercise."
+        elif any(k in text for k in ("save", "save data", "form", "health form")):
+            reply = "To save data: fill the form fields (heart rate, BP, sugar, pulse, smoker) and click 'Save Data'."
+        elif "report" in text or "pdf" in text or "download" in text:
+            reply = "To generate a report, click the Download PDF button in the 'Generate Report' card on the left sidebar."
+        elif any(k in text for k in ("symptom", "symptoms", "risk", "chance")):
+            reply = "If you're worried about symptoms or risk of heart disease, consult a healthcare professional. I can help explain metrics like BP, sugar, and heart rate."
+        elif "heart" in text or "heart rate" in text or "bpm" in text:
+            reply = "Heart rate is measured in beats per minute (bpm). Normal resting heart rate for adults is roughly 60-100 bpm."
+        elif "help" in text or "what can i ask" in text or "commands" in text:
+            reply = "You can ask: 'what is heartify', 'how to save data', 'how to generate report', or ask about heart rate, blood pressure, and similar topics."
+        else:
+            reply = "Sorry, I don't have an answer for that. Try asking 'what is heartify' or 'how to save data'."
+
+    return jsonify({"reply": reply})
+
+# Run the app
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
 

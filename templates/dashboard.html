@@ -8,23 +8,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dashboard-body">
-  <!-- header -->
   <header class="dashboard-header">
     <h1>❤️ Heartify Dashboard</h1>
     <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
   </header>
 
   <div class="dashboard-wrapper">
-    <!-- left sidebar -->
+    <!-- sidebar -->
     <aside class="sidebar">
       <div class="card profile-card">
         <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="avatar" class="avatar">
-        <div class="profile-info">
-          <h3 class="username">{{ user }}</h3>
-          <p>Age: 24</p>
-          <p>Gender: Male</p>
-          <p class="health-score">Health Score: <strong>86 / 100</strong></p>
-        </div>
+        <h3 class="username">{{ username }}</h3>
+        <p>Age: 24</p>
+        <p>Gender: Male</p>
+        <p class="health-score">Health Score: <strong>86 / 100</strong></p>
       </div>
 
       <div class="card tips-card">
@@ -34,39 +31,35 @@
 
       <div class="card report-card">
         <h4>📄 Generate Report</h4>
-        <form action="{{ url_for('download_pdf') }}" method="GET">
+        <form action="{{ url_for('generate_report') }}" method="POST">
           <button type="submit" class="download-pdf-btn">Download PDF</button>
         </form>
       </div>
     </aside>
 
-    <!-- main content -->
+    <!-- main -->
     <main class="main-content">
       <section class="welcome">
-        <h2>Welcome, {{ user }}!</h2>
+        <h2>Welcome, {{ username }}!</h2>
         <p>Track your health and predict your heart disease risk with <strong>Heartify</strong>.</p>
       </section>
 
-      <!-- summary cards -->
       <section class="summary-cards">
         <div class="stat-card">
           <i class="fa-solid fa-heart-pulse stat-icon"></i>
           <h4>Heart Rate</h4>
           <p class="stat-value">72 bpm</p>
         </div>
-
         <div class="stat-card">
           <i class="fa-solid fa-stethoscope stat-icon"></i>
           <h4>Blood Pressure</h4>
           <p class="stat-value">120 / 80 mmHg</p>
         </div>
-
         <div class="stat-card">
           <i class="fa-solid fa-syringe stat-icon"></i>
           <h4>Sugar Level</h4>
           <p class="stat-value">95 mg/dL</p>
         </div>
-
         <div class="stat-card">
           <i class="fa-solid fa-smoking stat-icon"></i>
           <h4>Smoking Status</h4>
@@ -74,44 +67,38 @@
         </div>
       </section>
 
-      <!-- heart prediction form -->
       <section class="form-section">
         <h3 class="form-title">🩺 Enter Health Data</h3>
-
-        <form method="POST" action="{{ url_for('dashboard') }}" class="health-form">
+        <form method="POST" action="{{ url_for('submit_health_data') }}" class="health-form">
           <input type="number" name="heart_rate" placeholder="Age / Heart Rate (bpm)" required>
-          <input type="text" name="bp" placeholder="Blood Pressure (e.g., 120/80)" required>
-          <input type="number" name="sugar" placeholder="Sugar Level (mg/dL)" required>
-          <select name="smoker" required>
+          <input type="text" name="bp_level" placeholder="Blood Pressure (e.g., 120/80)" required>
+          <input type="number" name="sugar_level" placeholder="Sugar Level (mg/dL)" required>
+          <input type="number" name="pulse_rate" placeholder="Pulse Rate" required>
+          <select name="smoker_status" required>
             <option value="">Smoker?</option>
-            <option>Yes</option>
             <option>No</option>
+            <option>Yes</option>
           </select>
-
-          <!-- big pink Save Data button like screenshot -->
           <button type="submit" class="save-btn">Save Data</button>
         </form>
       </section>
 
-      <!-- saved records -->
       <section class="records-section">
         <h3>Your Saved Records</h3>
-        {% if records and records|length > 0 %}
-        <table class="records-table">
-          <thead>
-            <tr><th>Heart Rate</th><th>BP</th><th>Sugar</th><th>Smoker</th></tr>
-          </thead>
-          <tbody>
-            {% for r in records %}
-            <tr>
-              <td>{{ r.heart_rate }}</td>
-              <td>{{ r.bp }}</td>
-              <td>{{ r.sugar }}</td>
-              <td>{{ r.smoker }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        {% if records %}
+          <table class="records-table">
+            <thead><tr><th>Heart Rate</th><th>BP</th><th>Sugar</th><th>Smoker</th></tr></thead>
+            <tbody>
+              {% for r in records %}
+                <tr>
+                  <td>{{ r.heart_rate }}</td>
+                  <td>{{ r.bp_level }}</td>
+                  <td>{{ r.sugar_level }}</td>
+                  <td>{{ r.smoker_status }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         {% else %}
           <p class="no-records">No saved records yet.</p>
         {% endif %}
@@ -120,15 +107,107 @@
   </div>
 
   <script>
-    // random tip (keeps the health-tip visible like the screenshot)
     const tips = [
       "Get 7-8 hours of sleep 😴",
       "Walk 30 minutes daily 🚶‍♂️",
       "Avoid smoking and excessive sugar 🚭",
       "Eat more fruits and vegetables 🍎",
-      "Drink enough water 💧",
+      "Drink enough water 💧"
     ];
     document.getElementById('health-tip').innerText = tips[Math.floor(Math.random()*tips.length)];
   </script>
+  <!-- CHATBOT BUTTON -->
+  <div id="chatbot-btn" class="chatbot-btn">💬</div>
+
+  <!-- CHATBOT WINDOW -->
+  <div id="chatbot-box" style="display:none;">
+    <div id="chatbot-header">Heartify Chatbot
+      <button id="chat-clear" class="chat-clear-btn" title="Clear chat">Clear</button>
+      <span id="chatbot-close" class="chat-close-btn" title="Close chat">✖</span>
+    </div>
+    <div id="chatbot-messages"></div>
+
+      <!-- scroll controls and quick FAQ buttons -->
+  <!-- scroll buttons removed; use native scrollbar in message pane -->
+
+      <div id="chatbot-input-area">
+      <input id="chatbot-input" type="text" placeholder="Ask a question...">
+      <button id="chatbot-send">Send</button>
+      </div>
+  </div>
+
+  <script>
+  document.getElementById("chatbot-btn").onclick = function() {
+    document.getElementById("chatbot-box").style.display = "block";
+    document.getElementById("chatbot-input").focus();
+    // Send initial greeting once when opening
+    const box = document.getElementById("chatbot-messages");
+    if (box.children.length === 0) {
+      fetch("/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "hello" })
+      })
+      .then(resp => resp.json())
+      .then(data => addBotMessage(data.reply))
+      .catch(err => addBotMessage("Sorry, something went wrong."));
+    }
+  };
+
+  document.getElementById("chatbot-close").onclick = function() {
+    document.getElementById("chatbot-box").style.display = "none";
+  };
+
+  document.getElementById("chatbot-send").onclick = sendMsg;
+  document.getElementById("chatbot-input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendMsg();
+  });
+
+  // Clear chat button
+  document.getElementById('chat-clear').onclick = function() {
+    const box = document.getElementById('chatbot-messages');
+    box.innerHTML = '';
+  }
+
+  // (Quick FAQ buttons removed) — side scroll controls remain
+
+  function sendMsg() {
+    let msg = document.getElementById("chatbot-input").value;
+    if (!msg.trim()) return;
+    addUserMessage(msg);
+
+    fetch("/chatbot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error('network');
+      return resp.json();
+    })
+    .then(data => addBotMessage(data.reply))
+    .catch(err => addBotMessage("Sorry, something went wrong."));
+
+    document.getElementById("chatbot-input").value = "";
+  }
+  function addUserMessage(txt) {
+    const box = document.getElementById("chatbot-messages");
+    const el = document.createElement('div');
+    el.className = 'user-msg';
+    el.textContent = txt;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function addBotMessage(txt) {
+    const box = document.getElementById("chatbot-messages");
+    const el = document.createElement('div');
+    el.className = 'bot-msg';
+    el.textContent = txt;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  }
+  </script>
+
 </body>
 </html>
